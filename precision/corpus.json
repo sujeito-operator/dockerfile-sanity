@@ -1,0 +1,782 @@
+{
+ "unbiased": {
+  "note": "every Dockerfile that could be fetched, kept whatever was in it. This is the population the false-positive rate is quoted over.",
+  "files": 114,
+  "entries": [
+   {
+    "repo": "ArcReel/ArcReel",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Arize-ai/phoenix",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "BerriAI/litellm",
+    "path": "Dockerfile",
+    "branch": "litellm_internal_staging"
+   },
+   {
+    "repo": "BlitzKraft/saythanks.io",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "CloakHQ/CloakBrowser",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Flagsmith/flagsmith",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "HKUDS/Vibe-Trading",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "HKUDS/nanobot",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "LMCache/LMCache",
+    "path": "docker/Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "LearningCircuit/local-deep-research",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "LongxingTan/Time-series-prediction",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "Mai-with-u/MaiBot",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "ModelTC/LightLLM",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA-NeMo/Automodel",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA-NeMo/Gym",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA-NeMo/RL",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA-NeMo/Speech",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA/NeMo-Agent-Toolkit",
+    "path": "docker/Dockerfile",
+    "branch": "develop"
+   },
+   {
+    "repo": "NVIDIA/NeMo-Retriever",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA/SkillSpector",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVlabs/Sana",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NewFuture/DDNS",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "NousResearch/hermes-agent",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "P0luz/Ombre-Brain",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Pennyw0rth/NetExec",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "PostHog/posthog",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "PreferredAI/cornac",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "Project-N-E-K-O/N.E.K.O",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "RLinf/RLinf",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "RocketPy-Team/RocketPy",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "Skyvern-AI/skyvern",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Soju06/codex-lb",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "THUDM/slime",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Tencent/AI-Infra-Guard",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "TencentCloud/Octop",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "TracecatHQ/tracecat",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Tracer-Cloud/opensre",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "allenai/open-instruct",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "apache/airflow",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "apache/superset",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "areal-project/AReaL",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "astroautomata/PySR",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "basicmachines-co/basic-memory",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "bghira/SimpleTuner",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "blacklanternsecurity/bbot",
+    "path": "Dockerfile",
+    "branch": "stable"
+   },
+   {
+    "repo": "calibrain/shelfmark",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "can4hou6joeng4/boss-agent-cli",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "ccxt/ccxt",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "deepspeedai/DeepSpeed",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "dsphper/lanhu-mcp",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "flosell/trailscraper",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "freqtrade/freqtrade",
+    "path": "Dockerfile",
+    "branch": "develop"
+   },
+   {
+    "repo": "future-agi/future-agi",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "genotrance/px",
+    "path": "docker/Dockerfile",
+    "branch": "devel"
+   },
+   {
+    "repo": "getmoto/moto",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "google/langextract",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "hao-ai-lab/FastVideo",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "harry0703/MoneyPrinterTurbo",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "headroomlabs-ai/headroom",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "invoice-x/invoice2data",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "jgravelle/jcodemunch-mcp",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "jumpserver/jumpserver",
+    "path": "Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "jxxghp/MoviePilot",
+    "path": "docker/Dockerfile",
+    "branch": "v3"
+   },
+   {
+    "repo": "karanhudia/borg-ui",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "kirodotdev/KiroCrew",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "langbot-app/LangBot",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "langchain-ai/open-swe",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "langflow-ai/openrag",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "laramies/theHarvester",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "learningequality/kolibri",
+    "path": "docker/Dockerfile",
+    "branch": "develop"
+   },
+   {
+    "repo": "marimo-team/marimo",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "mealie-recipes/mealie",
+    "path": "docker/Dockerfile",
+    "branch": "mealie-next"
+   },
+   {
+    "repo": "microsoft/PyRIT",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "mims-harvard/ToolUniverse",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "mlflow/mlflow",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "moraroy/NonSteamLaunchers-On-Steam-Deck",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "mother-of-all-self-hosting/mash-playbook",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "music-assistant/server",
+    "path": "Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "mvt-project/mvt",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "nesquena/hermes-webui",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "oceanbase/powercontext",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "odysseus-dev/odysseus",
+    "path": "Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "open-webui/open-webui",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "opengaming/osgameclones",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "opensquilla/opensquilla",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "ostris/ai-toolkit",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "paperless-ngx/paperless-ngx",
+    "path": "Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "pipeshub-ai/pipeshub-ai",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "pyodide/pyodide",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "pytorch/helion",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "pytorch/pytorch",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "pyvista/pyvista",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "radixark/miles",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "rafalp/Misago",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "razzant/ouroboros",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "repowise-dev/repowise",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "rush86999/atom",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "sgl-project/sglang",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "shane-mason/FieldStation42",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "sherlock-project/sherlock",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "sipyourdrink-ltd/bernstein",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "skypilot-org/skypilot",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "subframe7536/maple-font",
+    "path": "Dockerfile",
+    "branch": "variable"
+   },
+   {
+    "repo": "turnstonelabs/turnstone",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "ultralytics/ultralytics",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "unilabsim/UniLab",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "vitali87/code-graph-rag",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "vllm-project/vllm",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "volcengine/OpenViking",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "wizarrrr/wizarr",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "xingpingcn/enhanced-FaaS-in-China",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "yym68686/uni-api",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "zhayujie/CowAgent",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "zilliztech/VectorDBBench",
+    "path": "Dockerfile",
+    "branch": "main"
+   }
+  ]
+ },
+ "score-filtered": {
+  "note": "the output of a survey scanner that keeps only repositories scoring above zero. It over-represents bad files, and a file whose only defect would be `baked-secret` scores zero and is dropped, so this population cannot be used for a rate in either direction. It is here because it contains the one true positive.",
+  "files": 32,
+  "entries": [
+   {
+    "repo": "BlitzKraft/saythanks.io",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "Exa-Networks/exabgp",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "LMCache/LMCache",
+    "path": "docker/Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "LearningCircuit/local-deep-research",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NVIDIA/NeMo-Agent-Toolkit",
+    "path": "docker/Dockerfile",
+    "branch": "develop"
+   },
+   {
+    "repo": "NVIDIA/NeMo-Retriever",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NousResearch/hermes-agent",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "NovaSky-AI/SkyRL",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "PostHog/posthog",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "PrefectHQ/prefect",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "RLinf/RLinf",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "RocketPy-Team/RocketPy",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "Tencent/AI-Infra-Guard",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "Tracer-Cloud/opensre",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "blacklanternsecurity/bbot",
+    "path": "Dockerfile",
+    "branch": "stable"
+   },
+   {
+    "repo": "ccxt/ccxt",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "deepspeedai/DeepSpeed",
+    "path": "docker/Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "embeddings-benchmark/mteb",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "freqtrade/freqtrade",
+    "path": "Dockerfile",
+    "branch": "develop"
+   },
+   {
+    "repo": "google/tunix",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "jgravelle/jcodemunch-mcp",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "jxxghp/MoviePilot",
+    "path": "docker/Dockerfile",
+    "branch": "v3"
+   },
+   {
+    "repo": "mrmn2/PdfDing",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "mvt-project/mvt",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "paperless-ngx/paperless-ngx",
+    "path": "Dockerfile",
+    "branch": "dev"
+   },
+   {
+    "repo": "pytorch/helion",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "pytorch/pytorch",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "sgl-project/sglang",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "sipyourdrink-ltd/bernstein",
+    "path": "Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "skypilot-org/skypilot",
+    "path": "Dockerfile",
+    "branch": "master"
+   },
+   {
+    "repo": "ultralytics/ultralytics",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   },
+   {
+    "repo": "vllm-project/vllm",
+    "path": "docker/Dockerfile",
+    "branch": "main"
+   }
+  ]
+ },
+ "overlap": {
+  "shared_repositories": [
+   "BlitzKraft/saythanks.io",
+   "LMCache/LMCache",
+   "LearningCircuit/local-deep-research",
+   "NVIDIA/NeMo-Agent-Toolkit",
+   "NVIDIA/NeMo-Retriever",
+   "NousResearch/hermes-agent",
+   "PostHog/posthog",
+   "RLinf/RLinf",
+   "RocketPy-Team/RocketPy",
+   "Tencent/AI-Infra-Guard",
+   "Tracer-Cloud/opensre",
+   "blacklanternsecurity/bbot",
+   "ccxt/ccxt",
+   "deepspeedai/DeepSpeed",
+   "freqtrade/freqtrade",
+   "jgravelle/jcodemunch-mcp",
+   "jxxghp/MoviePilot",
+   "mvt-project/mvt",
+   "paperless-ngx/paperless-ngx",
+   "pytorch/helion",
+   "pytorch/pytorch",
+   "sgl-project/sglang",
+   "sipyourdrink-ltd/bernstein",
+   "skypilot-org/skypilot",
+   "ultralytics/ultralytics",
+   "vllm-project/vllm"
+  ],
+  "only_in_score-filtered": [
+   "Exa-Networks/exabgp",
+   "NovaSky-AI/SkyRL",
+   "PrefectHQ/prefect",
+   "embeddings-benchmark/mteb",
+   "google/tunix",
+   "mrmn2/PdfDing"
+  ]
+ }
+}
