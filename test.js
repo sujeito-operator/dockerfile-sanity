@@ -74,6 +74,63 @@ t('accepts manifest-first ordering', () => {
   const df = 'FROM node:20\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nUSER app\n';
   assert.ok(!rules(df).includes('cache-order'), rules(df).join());
 });
+// Until 0.0.4 this rule read the FINAL stage only, which is where it matters LEAST: in a
+// multi-stage build the dependency install lives in the builder stage and the final stage
+// just copies the artefact out. The most expensive instance of the defect was the one
+// instance the rule could not see.
+t('flags COPY . . before the install in a BUILDER stage', () => {
+  const df = 'FROM node:20 AS build\nWORKDIR /app\nCOPY . .\nRUN npm ci && npm run build\n' +
+             'FROM nginx:1.27\nUSER nginx\nCOPY --from=build /app/dist /usr/share/nginx/html\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('accepts manifest-first ordering in a builder stage', () => {
+  const df = 'FROM node:20 AS build\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\n' +
+             'COPY . .\nRUN npm run build\nFROM nginx:1.27\nUSER nginx\n' +
+             'COPY --from=build /app/dist /usr/share/nginx/html\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+t('COPY --from= is an artefact copy and never a cache-order defect', () => {
+  const df = 'FROM node:20 AS build\nRUN npm ci\nFROM node:20\nWORKDIR /app\n' +
+             'COPY --from=build /app /app\nRUN npm install --omit=dev\nUSER node\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+t('COPY flags before the paths do not hide a whole-context copy', () => {
+  const df = 'FROM python:3.12\nWORKDIR /app\nCOPY --chown=app:app . .\n' +
+             'RUN pip install -r requirements.txt\nUSER app\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+
+console.log('COPY --from external images');
+t('flags COPY --from an external image at :latest', () => {
+  const df = 'FROM python:3.13-slim\nCOPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/\nUSER app\n';
+  assert.ok(rules(df).includes('copy-from-latest'), rules(df).join());
+});
+t('flags COPY --from an untagged external image', () => {
+  const df = 'FROM python:3.13-slim\nCOPY --from=busybox /bin/busybox /bin/\nUSER app\n';
+  assert.ok(rules(df).includes('copy-from-latest'), rules(df).join());
+});
+t('accepts a pinned external image', () => {
+  const df = 'FROM python:3.13-slim\nCOPY --from=ghcr.io/astral-sh/uv:0.9.2 /uv /bin/\nUSER app\n';
+  assert.ok(!rules(df).includes('copy-from-latest'), rules(df).join());
+});
+t('accepts a digest-pinned external image', () => {
+  const df = 'FROM python:3.13-slim\nCOPY --from=busybox@sha256:abc /bin/busybox /bin/\nUSER app\n';
+  assert.ok(!rules(df).includes('copy-from-latest'), rules(df).join());
+});
+t('a declared stage alias is a stage, not an unpinned image', () => {
+  const df = 'FROM node:20 AS build\nRUN npm ci\nFROM nginx:1.27\nUSER nginx\n' +
+             'COPY --from=build /app/dist /usr/share/nginx/html\n';
+  assert.ok(!rules(df).includes('copy-from-latest'), rules(df).join());
+});
+t('a numeric stage index is a stage, not an image', () => {
+  const df = 'FROM node:20\nRUN npm ci\nFROM nginx:1.27\nUSER nginx\n' +
+             'COPY --from=0 /app/dist /usr/share/nginx/html\n';
+  assert.ok(!rules(df).includes('copy-from-latest'), rules(df).join());
+});
+t('a registry with a port is not mistaken for a tag', () => {
+  const df = 'FROM python:3.13-slim\nCOPY --from=registry.local:5000/tool:1.4 /t /bin/\nUSER app\n';
+  assert.ok(!rules(df).includes('copy-from-latest'), rules(df).join());
+});
 
 console.log('root user');
 t('flags a final stage with no USER', () =>
