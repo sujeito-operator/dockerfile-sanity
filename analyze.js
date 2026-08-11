@@ -114,6 +114,28 @@ function analyze(text) {
       }
     }
 
+    // `COPY --from=` usually names an earlier stage, but it may equally name an IMAGE --
+    // `COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/` is a very common way to pull a
+    // build tool in. When it does, an unpinned tag there is exactly as unreproducible as
+    // an unpinned FROM, and it is easier to miss because it does not look like a base
+    // image. Anything matching a declared stage alias is a stage, not an image.
+    if (n.instruction === 'COPY') {
+      const m = t.match(/^--from=(\S+)/);
+      const ref = m && m[1];
+      if (ref && !aliases.has(ref) && !ref.startsWith('$') && !/^\d+$/.test(ref)) {
+        const tag = ref.includes('@') ? null : ref.split('/').pop();
+        if (tag && /:latest$/i.test(tag)) {
+          add(n, 'copy-from-latest', 'warning',
+              'COPY --from names an external image at :latest, so this build pulls a ' +
+              'different tool on different days. Pin a version or a digest.');
+        } else if (tag && !tag.includes(':')) {
+          add(n, 'copy-from-latest', 'warning',
+              'COPY --from names an external image with no tag, which resolves to ' +
+              ':latest. Pin a version or a digest.');
+        }
+      }
+    }
+
     if (n.instruction === 'ADD') {
       const src = t.split(/\s+/)[0] || '';
       if (!/^https?:\/\//i.test(src) && !/\.(tar|tgz|gz|bz2|xz|zip)(\s|$)/i.test(src)) {
@@ -135,12 +157,19 @@ function analyze(text) {
   // Cache ordering: copying the whole context before installing dependencies means any
   // source change busts the dependency layer. This is the single most common reason
   // Docker builds are slow, and it is invisible until you measure it.
-  if (finalStage) {
-    const seq = finalStage.nodes;
+  // EVERY stage, not just the final one. In a multi-stage build the dependency install
+  // almost always lives in a `AS build` stage that the final image only copies artefacts
+  // out of -- so checking only the final stage misses the most expensive instance of the
+  // exact defect this rule is named for. `COPY --from=` is an artefact copy between
+  // stages, not a build-context copy, and never triggers this.
+  for (const stage of st) {
+    const seq = stage.nodes;
     for (let i = 0; i < seq.length; i++) {
       const n = seq[i];
       if (n.instruction !== 'COPY') continue;
-      if (!/^(\.|\.\/|\*)\s/.test(n.text) && !/^\.\s*\.\s*$/.test(n.text.trim())) continue;
+      if (/^--from=/.test(n.text.trim())) continue;
+      const args = n.text.replace(/^(--\S+\s+)*/, '');
+      if (!/^(\.|\.\/|\*)\s/.test(args) && !/^\.\s*\.\s*$/.test(args.trim())) continue;
       const later = seq.slice(i + 1).find(x => x.instruction === 'RUN' &&
         /(npm|yarn|pnpm)\s+(ci|install)|pip\s+install|bundle\s+install|go\s+mod\s+download|composer\s+install|cargo\s+build/.test(x.text));
       if (later) {
@@ -150,7 +179,9 @@ function analyze(text) {
             'everything. Copy the manifest first, install, then copy the rest.');
       }
     }
+  }
 
+  if (finalStage) {
     const hasUser = finalStage.nodes.some(n => n.instruction === 'USER' &&
                                                !/^root\b/i.test(n.text.trim()));
     if (!hasUser) {
