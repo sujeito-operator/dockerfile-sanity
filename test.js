@@ -65,6 +65,72 @@ t('flags a recognisable token value', () =>
 t('does not flag an ordinary ENV', () =>
   assert.ok(!rules('FROM d:1\nENV NODE_ENV=production\nUSER app\n').includes('baked-secret')));
 
+// Until 0.0.5 the key half of this rule was a bare substring match and the value was
+// never looked at, so the highest-severity rule in the extension fired on three real
+// Dockerfiles out of the 32 in evidence/dockerfile-scan-2026-08-11-0425.json and was
+// wrong on all three. Each of the next four cases is one of those lines, verbatim.
+t('does NOT flag TIKTOKEN_CACHE_DIR — TOKEN is not a token of that key (PostHog/posthog)', () =>
+  assert.ok(!rules('FROM d:1\nENV TIKTOKEN_CACHE_DIR=/code/.tiktoken_cache\nUSER app\n')
+    .includes('baked-secret')));
+t('does NOT flag DOWNLOAD_DEFAULT_TOKENIZER="False" (NVIDIA/NeMo-Retriever)', () =>
+  assert.ok(!rules('FROM d:1\nARG DOWNLOAD_DEFAULT_TOKENIZER="False"\nUSER app\n')
+    .includes('baked-secret')));
+t('does NOT flag an empty value: nothing is baked (PrefectHQ/prefect)', () =>
+  assert.ok(!rules('FROM d:1\nARG VITE_AMPLITUDE_API_KEY=""\nUSER app\n').includes('baked-secret')));
+t('does NOT call an ARG-to-ENV promotion a baked secret (PrefectHQ/prefect)', () => {
+  const df = 'FROM d:1\nARG VITE_AMPLITUDE_API_KEY=""\n' +
+             'ENV VITE_AMPLITUDE_API_KEY=$VITE_AMPLITUDE_API_KEY\nUSER app\n';
+  assert.ok(!rules(df).includes('baked-secret'), rules(df).join());
+});
+// ...but it is not nothing either: whatever --build-arg supplies persists in the image.
+t('reports the promotion as its own warning, not as an error', () => {
+  const df = 'FROM d:1\nARG VITE_AMPLITUDE_API_KEY=""\n' +
+             'ENV VITE_AMPLITUDE_API_KEY=$VITE_AMPLITUDE_API_KEY\nUSER app\n';
+  const p = analyze(df).find(x => x.rule === 'secret-arg-to-env');
+  assert.ok(p, rules(df).join());
+  assert.strictEqual(p.severity, 'warning');
+});
+t('stays silent when the promoted name is not a declared ARG', () =>
+  assert.ok(!rules('FROM d:1\nENV API_KEY=$API_KEY\nUSER app\n').includes('secret-arg-to-env')));
+t('does not flag a bare ARG declaration — it bakes nothing', () =>
+  assert.ok(!rules('FROM d:1\nARG GITHUB_TOKEN\nUSER app\n').includes('baked-secret')));
+t('does not flag a secret-named path or boolean', () => {
+  assert.ok(!rules('FROM d:1\nENV SECRET_DIR=/run/secrets\nUSER app\n').includes('baked-secret'));
+  assert.ok(!rules('FROM d:1\nENV USE_TOKEN_AUTH=true\nUSER app\n').includes('baked-secret'));
+});
+// The tightened key match must still catch every real credential name shape.
+t('still flags real secret keys with a literal value', () => {
+  for (const line of ['ENV POSTGRES_PASSWORD=postgres',
+                      'ENV AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI',
+                      'ENV GITHUB_TOKEN=abc123def456',
+                      'ARG SSH_PRIVATE_KEY=-----BEGIN',
+                      'ENV SECRET_KEY_BASE=deadbeefcafe',
+                      'ENV DB_CREDENTIALS=user:pw']) {
+    assert.ok(rules('FROM d:1\n' + line + '\nUSER app\n').includes('baked-secret'), line);
+  }
+});
+// The old code read text.split('=')[0], so it saw only the FIRST key on the line.
+t('sees a secret in the SECOND assignment of a multi-pair ENV', () =>
+  assert.ok(rules('FROM d:1\nENV TZ=UTC API_KEY=abc123def\nUSER app\n').includes('baked-secret')));
+t('reports a multi-pair ENV once, not once per assignment', () => {
+  const p = analyze('FROM d:1\nENV API_KEY=abc123 API_TOKEN=def456\nUSER app\n')
+    .filter(x => x.rule === 'baked-secret');
+  assert.strictEqual(p.length, 1);
+});
+t('a token-shaped value is still flagged whatever the key is called', () =>
+  assert.ok(rules('FROM d:1\nENV HARMLESS_NAME=AKIAIOSFODNN7EXAMPLE\nUSER app\n')
+    .includes('baked-secret')));
+// The only hit the first cut of this fix left on 114 real Dockerfiles, and it was still
+// wrong: substitutions nest, and a value made only of them is not a literal.
+t('does NOT flag a NESTED substitution (vllm-project/vllm)', () => {
+  const df = 'FROM d:1\nENV SCCACHE_S3_NO_CREDENTIALS=${USE_SCCACHE:+${SCCACHE_S3_NO_CREDENTIALS}}\nUSER a\n';
+  assert.ok(!rules(df).includes('baked-secret'), rules(df).join());
+});
+t('does NOT flag a defaulted substitution', () =>
+  assert.ok(!rules('FROM d:1\nENV API_KEY=${API_KEY:-}\nUSER a\n').includes('baked-secret')));
+t('a literal mixed with a substitution is still a literal', () =>
+  assert.ok(rules('FROM d:1\nENV API_KEY=live_${SUFFIX}\nUSER a\n').includes('baked-secret')));
+
 console.log('cache ordering');
 t('flags COPY . . before npm ci', () => {
   const df = 'FROM node:20\nWORKDIR /app\nCOPY . .\nRUN npm ci\nUSER app\n';
