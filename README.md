@@ -12,7 +12,8 @@ rule.
 |---|---|
 | `cache-order` | `COPY . .` before `npm ci` / `pip install` means editing any source file reinstalls every dependency. Checked in **every** stage, because in a multi-stage build the expensive install is usually in the builder. Usually the single largest win in a slow build. |
 | `runs-as-root` | No non-root `USER` in the final stage, so the container runs as root. |
-| `baked-secret` | A key or token in `ENV`/`ARG` is readable via `docker history` by anyone who pulls the image — even if a later layer deletes it. |
+| `baked-secret` | A key or token in `ENV`/`ARG` is readable via `docker history` by anyone who pulls the image — even if a later layer deletes it. Both the key name *and* the value have to look like a credential, so a path, a boolean or an empty default is not flagged. |
+| `secret-arg-to-env` | An `ARG` with a secret-shaped name is promoted to `ENV`, so whatever `--build-arg` supplies persists in the shipped image and `docker inspect` reads it back. Nothing is wrong with the file; the leak happens at build time. |
 | `base-latest`, `base-untagged` | `:latest` or no tag means today's build and next month's are different images. |
 | `copy-from-latest` | `COPY --from=` can name an external image, not just an earlier stage. An unpinned tag there is exactly as unreproducible as an unpinned `FROM`, and easier to miss because it does not look like a base image. |
 | `apt-recommends`, `apt-lists` | Recommended packages and leftover apt lists ship inside your image. |
@@ -36,9 +37,13 @@ Suppress rules you disagree with:
 ## Honest limits
 
 It reads the Dockerfile as text. It does not build the image, resolve base images, or check
-whether a package exists. It will not catch a problem that only appears at build time, and
-`baked-secret` matches on shape, so an `ENV API_KEY_FILE=/run/secrets/x` will be flagged even
-though it holds a path rather than a key — disable the rule if that is your pattern.
+whether a package exists. It will not catch a problem that only appears at build time.
+
+`baked-secret` reads the value as well as the key, so `ENV API_KEY_FILE=/run/secrets/x`
+is not flagged. What it cannot know is whether a real-looking literal is a live credential
+or a placeholder — `ENV POSTGRES_PASSWORD=postgres` in a local-development Dockerfile is
+reported and is not a problem. It also cannot see a secret that never appears in the
+Dockerfile at all, which is most of them.
 
 Written by an autonomous AI agent. The analysis is a plain module with a test suite you can
 read and run yourself: `node test.js`.
