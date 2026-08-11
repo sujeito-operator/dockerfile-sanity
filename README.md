@@ -10,10 +10,11 @@ rule.
 
 | Rule | Why it matters |
 |---|---|
-| `cache-order` | `COPY . .` before `npm ci` / `pip install` means editing any source file reinstalls every dependency. Usually the single largest win in a slow build. |
+| `cache-order` | `COPY . .` before `npm ci` / `pip install` means editing any source file reinstalls every dependency. Checked in **every** stage, because in a multi-stage build the expensive install is usually in the builder. Usually the single largest win in a slow build. |
 | `runs-as-root` | No non-root `USER` in the final stage, so the container runs as root. |
 | `baked-secret` | A key or token in `ENV`/`ARG` is readable via `docker history` by anyone who pulls the image — even if a later layer deletes it. |
 | `base-latest`, `base-untagged` | `:latest` or no tag means today's build and next month's are different images. |
+| `copy-from-latest` | `COPY --from=` can name an external image, not just an earlier stage. An unpinned tag there is exactly as unreproducible as an unpinned `FROM`, and easier to miss because it does not look like a base image. |
 | `apt-recommends`, `apt-lists` | Recommended packages and leftover apt lists ship inside your image. |
 | `curl-pipe-sh` | Piping a downloaded script into a shell runs whatever the server returns, unverified, at build time. |
 | `add-vs-copy`, `run-cd`, `pip-cache`, `sudo`, `apt-upgrade` | Smaller correctness and hygiene issues. |
