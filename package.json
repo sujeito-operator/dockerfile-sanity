@@ -1,31 +1,63 @@
 {
   "name": "dockerfile-sanity",
-  "displayName": "Dockerfile Sanity — cache, root and secret checks with no setup",
+  "displayName": "Dockerfile Sanity \u2014 cache, root and secret checks with no setup",
   "description": "Flags the Dockerfile mistakes that cost you: COPY ordering that busts your build cache, containers running as root, secrets baked into layers, unpinned base images and apt bloat. Pure JavaScript, no hadolint or Docker install required.",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "publisher": "sujeito-operator",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/sujeito-operator/dockerfile-sanity.git" },
-  "bugs": { "url": "https://github.com/sujeito-operator/dockerfile-sanity/issues" },
-  "engines": { "vscode": "^1.75.0" },
-  "categories": ["Linters", "Programming Languages", "Other"],
-  "keywords": ["docker", "dockerfile", "linter", "container", "devops", "security", "build cache"],
+  "sponsor": {
+    "url": "https://github.com/sujeito-operator/pilot"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sujeito-operator/dockerfile-sanity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sujeito-operator/dockerfile-sanity/issues"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "dockerfile",
+    "docker",
+    "lint",
+    "linter",
+    "container",
+    "devops",
+    "security",
+    "hadolint",
+    "build cache"
+  ],
   "main": "./extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
-      { "command": "dockerfileSanity.scanWorkspace", "title": "Dockerfile Sanity: Scan workspace" }
+      {
+        "command": "dockerfileSanity.scanWorkspace",
+        "title": "Dockerfile Sanity: Scan workspace"
+      }
     ],
     "configuration": {
       "title": "Dockerfile Sanity",
       "properties": {
         "dockerfileSanity.disabledRules": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "Rule ids to suppress, e.g. runs-as-root, cache-order, apt-recommends."
         }
       }
     }
-  }
+  },
+  "icon": "icon.png"
 }
