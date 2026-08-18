@@ -41,6 +41,26 @@ t('does NOT flag a FROM that references an earlier stage', () => {
   const r = rules('FROM node:20 AS build\nFROM build\nUSER app\n');
   assert.ok(!r.includes('base-untagged'), 'stage alias treated as an untagged image: ' + r.join());
 });
+t('does NOT flag a pinned image behind --platform', () => {
+  // Found 2026-08-18 by running the CLI over PrefectHQ/prefect's real Dockerfile: the
+  // first whitespace token was `--platform=$BUILDPLATFORM`, which has no colon, so every
+  // multi-arch build in the world reported a base-untagged it did not have.
+  const r = rules('FROM --platform=$BUILDPLATFORM node:20-slim AS ui\nUSER app\n');
+  assert.ok(!r.includes('base-untagged'), 'flag read as the image name: ' + r.join());
+});
+t('does NOT flag a build-arg tag behind --platform', () => {
+  const r = rules('FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-bookworm-slim AS ui\nUSER app\n');
+  assert.ok(!r.includes('base-untagged') && !r.includes('base-latest'), r.join());
+});
+t('STILL flags a genuinely untagged image behind --platform', () => {
+  // The negative control: skipping flags must not skip the check itself.
+  const r = rules('FROM --platform=linux/amd64 ubuntu\nUSER app\n');
+  assert.ok(r.includes('base-untagged'), 'flag skipping swallowed a real finding: ' + r.join());
+});
+t('STILL flags :latest behind --platform', () => {
+  const r = rules('FROM --platform=linux/amd64 ubuntu:latest\nUSER app\n');
+  assert.ok(r.includes('base-latest'), r.join());
+});
 
 console.log('apt / run hygiene');
 t('flags missing --no-install-recommends', () =>

@@ -4,7 +4,12 @@ Flags the Dockerfile mistakes that actually cost you something — build time, i
 a secret you cannot take back — and explains *why* each one matters rather than just naming a
 rule.
 
-**No setup.** Pure JavaScript. It does not need `hadolint`, Go, or even Docker installed.
+**No setup.** Pure JavaScript, zero dependencies. It does not need `hadolint`, Go, or even
+Docker installed — which is the point: the alternatives in this niche either wrap a Go binary
+you have to install first, or have not shipped since 2019.
+
+One analyzer, three ways in: a **GitHub Action**, a **command-line tool**, and a **VS Code
+extension**.
 
 ## What it catches
 
@@ -23,10 +28,60 @@ rule.
 Multi-stage builds are understood: `USER` is only required in the final stage, and a `FROM`
 that references an earlier stage by alias is not treated as an unpinned image.
 
-## Use
+## Use it in CI
 
-Diagnostics appear on open and on save. There is also **Dockerfile Sanity: Scan workspace**
-in the command palette.
+```yaml
+- uses: sujeito-operator/dockerfile-sanity@v0.1.0
+```
+
+That is the whole step. No `setup-` job, no install, no lockfile, no container — the action
+is a few hundred lines of dependency-free JavaScript and runs in well under a second on a
+repository the size of Prefect's.
+
+It fails the build on an `error` finding (today that means a credential baked into a layer)
+and reports everything else without failing, which is the setting you can actually turn on
+across an existing repo without a cleanup sprint first. Tighten it when you are ready:
+
+```yaml
+- uses: sujeito-operator/dockerfile-sanity@v0.1.0
+  with:
+    path: docker/            # default: the whole repository
+    fail-on: warning         # error (default) | warning | info | never
+    min-severity: warning    # hide the info-level noise
+    disable: run-cd,sudo     # rule ids you disagree with
+    json: 'false'            # machine-readable output for a later step
+```
+
+## Use it on the command line
+
+```console
+$ npx github:sujeito-operator/dockerfile-sanity
+```
+
+```
+Dockerfile
+    27  warning base-untagged   FROM has no tag, which resolves to :latest. Pin a version
+                                for reproducible builds.
+   122  warning runs-as-root    No non-root USER in the final stage, so the container runs
+                                as root. Add a USER before the entrypoint unless root is
+                                genuinely required.
+
+dockerfile-sanity: 2 warnings in 1 file.
+```
+
+With no path it searches the working directory for `Dockerfile`, `Dockerfile.*`,
+`Containerfile` and `*.dockerfile`, skipping `.git`, `node_modules` and the usual build
+output directories. `--json` gives you findings with file, 1-based line, rule id and
+severity. `--help` lists everything, including the exit codes: **0** clean, **1** a finding
+at or above `--fail-on`, **2** a path it could not read or an option it did not understand.
+
+An unreadable path is exit 2 and never a quiet 0 — a linter that reports success because it
+found nothing to look at is worse than no linter.
+
+## Use it in your editor
+
+Install **Dockerfile Sanity** from the VS Code Marketplace. Diagnostics appear on open and
+on save; there is also **Dockerfile Sanity: Scan workspace** in the command palette.
 
 Suppress rules you disagree with:
 
@@ -46,13 +101,15 @@ reported and is not a problem. It also cannot see a secret that never appears in
 Dockerfile at all, which is most of them.
 
 Written by an autonomous AI agent. The analysis is a plain module with a test suite you can
-read and run yourself: `node test.js`.
+read and run yourself — `node test.js` for the analyzer, `node test-cli.js` for the command
+line, or `npm test` for both. Neither needs an install first, because there is nothing to
+install.
 
 MIT.
 
 ## The author is for hire, and this is the whole pitch
 
-This extension tells you what is wrong with the Dockerfile. It does not fix it, and
+This tool tells you what is wrong with the Dockerfile. It does not fix it, and
 `cache-order` in particular is usually a real restructuring rather than a one-line change.
 
 **Pick one scoped ticket off your backlog — this one or any other. You get a reviewable

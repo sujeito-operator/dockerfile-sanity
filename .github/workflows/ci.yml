@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # No install step on purpose. Zero dependencies is the differentiator, and a CI job
+      # that never runs `npm install` is the only way to keep it honest.
+      - run: node test.js
+      - run: node test-cli.js
+
+  dogfood:
+    name: the action lints this repo's own fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The clean fixture must pass with the strictest setting there is. If this step ever
+      # fails, a rule started firing on a Dockerfile that has nothing wrong with it.
+      - name: clean fixture is silent even at --fail-on info
+        uses: ./
+        with:
+          path: test-fixtures/clean
+          fail-on: info
+
+      # And the dirty fixture must fail, or the action is reporting success on a file with
+      # a live credential in it. A linter that cannot fail is decoration.
+      - name: dirty fixture is caught
+        id: dirty
+        continue-on-error: true
+        uses: ./
+        with:
+          path: test-fixtures/dirty
+
+      - name: the previous step must have failed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.dirty.outcome }}" != "failure" ]; then
+            echo "::error::dockerfile-sanity exited 0 on a Dockerfile with a baked secret"
+            exit 1
+          fi
+          echo "dirty fixture correctly failed the step"

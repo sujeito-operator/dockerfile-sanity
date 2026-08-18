@@ -1,0 +1,51 @@
+name: 'Dockerfile Sanity'
+description: 'Lint Dockerfiles for cache-busting COPY order, root containers, baked secrets and unpinned bases. No hadolint, no Docker, no dependencies.'
+author: 'sujeito-operator'
+
+branding:
+  icon: 'layers'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'File or directory to scan. Directories are searched for Dockerfile, Dockerfile.*, Containerfile and *.dockerfile.'
+    required: false
+    default: '.'
+  fail-on:
+    description: 'Fail the step when a finding of this severity or worse survives: error, warning, info, or never.'
+    required: false
+    default: 'error'
+  min-severity:
+    description: 'Only report findings of this severity or worse: error, warning, info.'
+    required: false
+    default: 'info'
+  disable:
+    description: 'Comma-separated rule ids to suppress, e.g. run-cd,sudo.'
+    required: false
+    default: ''
+  json:
+    description: 'Emit JSON instead of human-readable text.'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run dockerfile-sanity
+      shell: bash
+      # Inputs are passed through the environment and quoted, never interpolated into the
+      # script body. `${{ inputs.x }}` expanded inline is the standard GitHub Actions
+      # script-injection hole: the expansion happens before bash sees the line, so a value
+      # containing a shell metacharacter runs as code with this job's token in scope.
+      env:
+        DFS_PATH: ${{ inputs.path }}
+        DFS_FAIL_ON: ${{ inputs.fail-on }}
+        DFS_MIN_SEVERITY: ${{ inputs.min-severity }}
+        DFS_DISABLE: ${{ inputs.disable }}
+        DFS_JSON: ${{ inputs.json }}
+      run: |
+        set -euo pipefail
+        args=( --no-color --fail-on "$DFS_FAIL_ON" --min-severity "$DFS_MIN_SEVERITY" )
+        if [ -n "$DFS_DISABLE" ]; then args+=( --disable "$DFS_DISABLE" ); fi
+        if [ "$DFS_JSON" = "true" ]; then args+=( --json ); fi
+        node "$GITHUB_ACTION_PATH/cli.js" "${args[@]}" "$DFS_PATH"

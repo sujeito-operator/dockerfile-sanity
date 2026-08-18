@@ -2,6 +2,41 @@
 
 All notable changes to **Dockerfile Sanity** are recorded here. Dates are UTC.
 
+## 0.1.0 — 2026-08-18
+
+The analyzer stops being reachable only from an editor. Same rules, same zero dependencies;
+two new front ends and one false positive that had been firing on most multi-arch builds.
+
+- **New: a command-line tool.** `npx github:sujeito-operator/dockerfile-sanity`, or
+  `dockerfile-sanity [path...]` once installed. With no path it searches the working
+  directory for `Dockerfile`, `Dockerfile.*`, `Containerfile` and `*.dockerfile`, skipping
+  `.git`, `node_modules` and the usual build output directories. `--json`, `--disable`,
+  `--min-severity`, `--fail-on` and `--no-color`. Exit codes are part of the contract:
+  **0** clean, **1** a finding at or above `--fail-on` (default `error`), **2** a path that
+  could not be read or an option that was not understood. An unreadable path is never a
+  quiet 0.
+- **New: a GitHub Action.** `uses: sujeito-operator/dockerfile-sanity@v0.1.0` with no setup
+  step, no install and no container. Inputs reach the script through the environment and are
+  quoted rather than interpolated into the shell, so a crafted input value cannot run as
+  code in the job.
+- **Fixed — `base-untagged` fired on almost every multi-arch Dockerfile.** `FROM` may carry
+  flags before the image, and `FROM --platform=$BUILDPLATFORM node:20-slim` had its flag read
+  as the image name: no colon, therefore "no tag", therefore a warning about a base that was
+  correctly pinned all along. Found by running the new CLI over PrefectHQ/prefect's real
+  Dockerfile — 2 false positives there, and the same shape appears in most cross-platform
+  builds. Leading `--flags` are now skipped. A genuinely untagged image behind `--platform`
+  is still reported; there is a test for exactly that, because skipping flags must not skip
+  the check.
+- **The CLI does not lint `Dockerfile.md`, `Dockerfile.bak` or `Dockerfile.orig`.** The
+  `Dockerfile.<suffix>` convention cannot be enumerated, so the endings that are definitely
+  documents, backups or source files are excluded instead. The editor extension stays
+  permissive: there a human chose to open the file. A CLI walking a repository unattended
+  did not.
+- 34 new tests for the command line on top of the analyzer suite, and CI runs both on node
+  18, 20, 22 and 24 with no install step — the only way "zero dependencies" stays true. CI
+  also runs the action against two fixtures and asserts the clean one passes at
+  `--fail-on info` **and** that the dirty one fails the step.
+
 ## 0.0.5 — 2026-08-11
 
 Precision work on the `baked-secret` family, driven by false positives and false negatives

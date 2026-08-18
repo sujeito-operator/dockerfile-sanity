@@ -123,8 +123,11 @@ function analyze(text) {
     const t = n.text;
 
     if (n.instruction === 'FROM') {
-      const img = t.split(/\s+/)[0] || '';
-      const base = img.split(' ')[0];
+      // FROM may carry flags before the image -- `FROM --platform=$BUILDPLATFORM node:20`
+      // is the standard multi-arch form. Taking the first token blindly read the flag as
+      // the image name, so every cross-platform build in the wild reported a bogus
+      // base-untagged. Measured on prefect's Dockerfile: 2 false positives, 0 real.
+      const base = (t.split(/\s+/).find(w => w && !w.startsWith('--')) || '');
       // A stage may legitimately build FROM an earlier stage by alias.
       if (!aliases.has(base.split(':')[0]) && !base.startsWith('$')) {
         if (/:latest$/i.test(base)) {

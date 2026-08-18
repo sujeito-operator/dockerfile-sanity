@@ -2,7 +2,7 @@
   "name": "dockerfile-sanity",
   "displayName": "Dockerfile Sanity — cache, root and secret checks with no setup",
   "description": "Flags the Dockerfile mistakes that cost you: COPY ordering that busts your build cache, containers running as root, secrets baked into layers, unpinned base images and apt bloat. Pure JavaScript, no hadolint or Docker install required.",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "publisher": "sujeito-operator",
   "license": "MIT",
   "sponsor": {
@@ -15,8 +15,25 @@
   "bugs": {
     "url": "https://github.com/sujeito-operator/dockerfile-sanity/issues"
   },
+  "homepage": "https://github.com/sujeito-operator/dockerfile-sanity#readme",
+  "bin": {
+    "dockerfile-sanity": "./cli.js"
+  },
+  "files": [
+    "cli.js",
+    "analyze.js",
+    "extension.js",
+    "action.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test.js && node test-cli.js"
+  },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.75.0",
+    "node": ">=18"
   },
   "categories": [
     "Linters",
@@ -32,7 +49,12 @@
     "devops",
     "security",
     "hadolint",
-    "build cache"
+    "build cache",
+    "cli",
+    "ci",
+    "lint-dockerfile",
+    "container-security",
+    "zero-dependency"
   ],
   "main": "./extension.js",
   "activationEvents": [
