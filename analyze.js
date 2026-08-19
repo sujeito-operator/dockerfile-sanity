@@ -244,16 +244,62 @@ function analyze(text) {
   // out of -- so checking only the final stage misses the most expensive instance of the
   // exact defect this rule is named for. `COPY --from=` is an artefact copy between
   // stages, not a build-context copy, and never triggers this.
+  // A LATE `COPY . .` IS THE CORRECT PATTERN, NOT THE DEFECT, WHEN THE DEPENDENCY LAYER WAS
+  // ALREADY WARMED FROM A NARROW COPY EARLIER IN THE SAME STAGE. Measured 2026-08-19 against
+  // real files: `teableio/teable` copies three manifests, runs `pnpm fetch`, and only then
+  // copies the source; `qdrant/qdrant` cooks a `cargo-chef` recipe before its `COPY . .`.
+  // Both are textbook, both were reported, and a linter that cries wolf on the recommended
+  // pnpm and cargo-chef layouts is worse than no linter. The test for "already warmed" is
+  // positional and needs no knowledge of which files are manifests: a dependency-fetching RUN
+  // that executes BEFORE the first broad context copy in its stage can only have been fed by
+  // a narrow copy, which is exactly the thing this rule asks for.
+  const DEP_FETCH = /(npm|yarn|pnpm)\s+(ci|install|fetch)|pip\s+install|uv\s+(sync|pip\s+install)|poetry\s+install|bundle\s+install|go\s+mod\s+(download|tidy)|composer\s+install|cargo\s+(build|chef\s+cook)|mix\s+deps\.get|mvn\s+.*dependency:go-offline/;
+
+  // INSTALLING A TOOL IS NOT WARMING A DEPENDENCY LAYER, AND CONFLATING THE TWO DELETES THE
+  // RULE. The first version of the suppression above tested `DEP_FETCH` on the earlier RUNs
+  // too, and it silently hid two REAL findings: formbricks' installer stage opens with
+  // `npm install --ignore-scripts -g corepack@0.35.0` and keep's CLI image with
+  // `pip install "poetry==$POETRY_VERSION"`. Both matched, both are tool bootstraps, and in
+  // both files the project's own dependencies are still resolved after `COPY . .`.
+  // So warming needs stronger evidence than "a package manager ran": the command must be a
+  // whole-project resolve (no positional package name) and must not be global.
+  const warms = text => text.split(/&&|\|\||[;|]/).some(seg => {
+    const c = seg.trim();
+    if (/(^|\s)(-g|--global)(\s|$)/.test(c)) return false;
+    if (/\b(npm|yarn|pnpm)\s+(ci|fetch)\b/.test(c)) return true;
+    if (/\b(npm|yarn|pnpm)\s+install\b/.test(c)) {
+      // Every remaining argument must be a flag; a positional is a package being added.
+      const rest = c.replace(/^.*?\b(npm|yarn|pnpm)\s+install\b/, '').trim();
+      return rest === '' || rest.split(/\s+/).every(w => w.startsWith('-'));
+    }
+    if (/\bpip\s+install\s+(-r\b|-e\b|--requirement\b|\.(\s|$))/.test(c)) return true;
+    if (/\buv\s+(sync\b|pip\s+install\s+(-r\b|-e\b))/.test(c)) return true;
+    if (/\bpoetry\s+install\b/.test(c)) return true;
+    if (/\bgo\s+mod\s+(download|tidy)\b/.test(c)) return true;
+    if (/\b(bundle|composer)\s+install\b/.test(c)) return true;
+    if (/\bcargo\s+chef\s+cook\b/.test(c)) return true;
+    if (/\bmix\s+deps\.get\b/.test(c)) return true;
+    if (/\bmvn\b.*\bdependency:go-offline\b/.test(c)) return true;
+    return false;
+  });
+
   for (const stage of st) {
     const seq = stage.nodes;
+    const broad = j => {
+      const x = seq[j];
+      if (x.instruction !== 'COPY') return false;
+      if (/^--from=/.test(x.text.trim())) return false;
+      const a = x.text.replace(/^(--\S+\s+)*/, '');
+      return /^(\.|\.\/|\*)\s/.test(a) || /^\.\s*\.\s*$/.test(a.trim());
+    };
+    const firstBroad = seq.findIndex((_, j) => broad(j));
+    const warmedEarly = firstBroad !== -1 && seq.slice(0, firstBroad)
+      .some(x => x.instruction === 'RUN' && warms(x.text));
     for (let i = 0; i < seq.length; i++) {
       const n = seq[i];
-      if (n.instruction !== 'COPY') continue;
-      if (/^--from=/.test(n.text.trim())) continue;
-      const args = n.text.replace(/^(--\S+\s+)*/, '');
-      if (!/^(\.|\.\/|\*)\s/.test(args) && !/^\.\s*\.\s*$/.test(args.trim())) continue;
-      const later = seq.slice(i + 1).find(x => x.instruction === 'RUN' &&
-        /(npm|yarn|pnpm)\s+(ci|install)|pip\s+install|bundle\s+install|go\s+mod\s+download|composer\s+install|cargo\s+build/.test(x.text));
+      if (!broad(i)) continue;
+      if (warmedEarly) continue;
+      const later = seq.slice(i + 1).find(x => x.instruction === 'RUN' && DEP_FETCH.test(x.text));
       if (later) {
         add(n, 'cache-order', 'warning',
             'COPY of the whole build context happens before dependencies are installed, so ' +

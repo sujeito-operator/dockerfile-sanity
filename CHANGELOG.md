@@ -2,6 +2,34 @@
 
 All notable changes to **Dockerfile Sanity** are recorded here. Dates are UTC.
 
+## 0.1.1 — 2026-08-19
+
+One precision fix, found the same way 0.1.0's was: by running the shipped CLI over other
+people's real Dockerfiles rather than over its own fixtures.
+
+- **Fixed — `cache-order` cried wolf on the recommended `pnpm fetch` and `cargo-chef`
+  layouts.** The rule flagged any `COPY . .` followed by a dependency install, without
+  noticing that the dependency layer had often already been built from a narrow copy earlier
+  in the same stage — which is precisely the arrangement the rule's own message asks for.
+  A late source copy after a warm dependency layer is the correct pattern, not the defect.
+  Measured over 165 Dockerfiles in 31 repositories: 12 `cache-order` findings became 9, and
+  every one of the three that went away was verified by hand as wrong —
+  `teableio/teable` (three manifests, then `pnpm fetch`, then the source),
+  `qdrant/qdrant` (a cooked `cargo-chef` recipe before `COPY . .`), and
+  `hoppscotch/hoppscotch`'s `prod.Dockerfile` (`COPY pnpm-lock.yaml` + `pnpm fetch`).
+- **And the fix for the fix, which is the part worth reading.** The first version of this
+  suppression treated *any* package-manager command as evidence of a warm layer, and it
+  silently hid two **real** findings: `formbricks/formbricks` opens its installer stage with
+  `npm install --ignore-scripts -g corepack@0.35.0`, and `keephq/keep`'s CLI image with
+  `pip install "poetry==$POETRY_VERSION"`. Both are tool bootstraps; in both files the
+  project's own dependencies are still resolved after the whole context is copied.
+  **Installing a tool is not warming a dependency layer.** Warming now requires a
+  whole-project resolve — no positional package name, never `-g`/`--global`, and for pip an
+  explicit `-r`, `-e` or `.`. Both files are back to being reported, and both are pinned by
+  a test.
+- Six new tests, four of them negative controls. Suppressing the warm case must not suppress
+  the defect, or the fix has quietly deleted the rule.
+
 ## 0.1.0 — 2026-08-18
 
 The analyzer stops being reachable only from an editor. Same rules, same zero dependencies;

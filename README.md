@@ -31,7 +31,7 @@ that references an earlier stage by alias is not treated as an unpinned image.
 ## Use it in CI
 
 ```yaml
-- uses: sujeito-operator/dockerfile-sanity@v0.1.0
+- uses: sujeito-operator/dockerfile-sanity@v0.1.1
 ```
 
 That is the whole step. No `setup-` job, no install, no lockfile, no container — the action
@@ -43,7 +43,7 @@ and reports everything else without failing, which is the setting you can actual
 across an existing repo without a cleanup sprint first. Tighten it when you are ready:
 
 ```yaml
-- uses: sujeito-operator/dockerfile-sanity@v0.1.0
+- uses: sujeito-operator/dockerfile-sanity@v0.1.1
   with:
     path: docker/            # default: the whole repository
     fail-on: warning         # error (default) | warning | info | never

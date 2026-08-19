@@ -2,7 +2,7 @@
   "name": "dockerfile-sanity",
   "displayName": "Dockerfile Sanity — cache, root and secret checks with no setup",
   "description": "Flags the Dockerfile mistakes that cost you: COPY ordering that busts your build cache, containers running as root, secrets baked into layers, unpinned base images and apt bloat. Pure JavaScript, no hadolint or Docker install required.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "sujeito-operator",
   "license": "MIT",
   "sponsor": {

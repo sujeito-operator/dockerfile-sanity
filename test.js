@@ -186,6 +186,86 @@ t('COPY flags before the paths do not hide a whole-context copy', () => {
   assert.ok(rules(df).includes('cache-order'), rules(df).join());
 });
 
+// 0.1.1. Both of these were reported against real files on 2026-08-19 and both were wrong.
+// The rule saw `COPY . .` followed by an install and stopped reading; in each case the
+// dependency layer had ALREADY been built from a narrow copy earlier in the same stage,
+// which is precisely the layout the rule's own message asks for. Transcribed from the live
+// files, reduced to the lines that matter.
+t('teable: pnpm fetch from three manifests, THEN the source copy, is correct', () => {
+  const df = 'FROM node:22-bookworm AS deps\nWORKDIR /w\n' +
+             'COPY --link package.json pnpm-workspace.yaml pnpm-lock.yaml ./\n' +
+             'RUN pnpm fetch\nCOPY --link . .\n' +
+             'RUN pnpm install --prefer-offline --frozen-lockfile\nUSER node\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+t('qdrant: a cooked cargo-chef recipe before COPY . . is correct', () => {
+  const df = 'FROM rust:1 AS builder\nWORKDIR /q\n' +
+             'COPY --from=planner /q/recipe.json recipe.json\n' +
+             'RUN cargo chef cook --release --recipe-path recipe.json\n' +
+             'COPY . .\nRUN cargo build --release\nUSER app\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+// THE NEGATIVE CONTROLS. Suppressing the warm case must not suppress the defect, or the
+// fix has quietly deleted the rule. §MT-3: skipping something must not skip the check.
+t('a dependency fetch AFTER the broad copy is still the defect', () => {
+  const df = 'FROM node:22 AS deps\nWORKDIR /w\nCOPY . .\nRUN pnpm fetch\n' +
+             'RUN pnpm install --frozen-lockfile\nUSER node\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('a warm fetch in ANOTHER stage does not excuse this stage', () => {
+  const df = 'FROM node:22 AS deps\nCOPY package.json ./\nRUN pnpm fetch\n' +
+             'FROM node:22 AS build\nWORKDIR /w\nCOPY . .\nRUN pnpm install\nUSER node\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('a RUN that is not a dependency fetch does not count as warming', () => {
+  const df = 'FROM node:22\nWORKDIR /w\nRUN apt-get update && apt-get install -y git\n' +
+             'COPY . .\nRUN npm ci\nUSER node\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+// INSTALLING A TOOL IS NOT WARMING A DEPENDENCY LAYER. The first version of the suppression
+// tested the same regex on the earlier RUNs and hid these two REAL findings; both are
+// transcribed from the live files that exposed it.
+t('formbricks: a global corepack install does not count as warming', () => {
+  const df = 'FROM node:24-alpine AS installer\n' +
+             'RUN npm install --ignore-scripts -g corepack@0.35.0\nRUN corepack enable\n' +
+             'WORKDIR /app\nCOPY . .\nRUN touch apps/web/.env\n' +
+             'RUN pnpm install --ignore-scripts --frozen-lockfile\nUSER node\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('keep: pip-installing poetry itself does not count as warming', () => {
+  const df = 'FROM python:3.11 AS base\nRUN pip install "poetry==1.3.2"\n' +
+             'RUN python -m venv /venv\nCOPY . .\n' +
+             'RUN poetry build && /venv/bin/pip install dist/*.whl\nUSER app\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('adding one named package is not a whole-project resolve', () => {
+  const df = 'FROM node:22\nRUN npm install zx\nWORKDIR /w\nCOPY . .\n' +
+             'RUN npm ci\nUSER node\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('a flags-only pnpm install IS a whole-project resolve', () => {
+  const df = 'FROM node:22\nWORKDIR /w\nCOPY pnpm-lock.yaml ./\n' +
+             'RUN pnpm install --frozen-lockfile\nCOPY . .\nRUN pnpm build\nUSER node\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+t('pip install -r before the broad copy IS warming', () => {
+  const df = 'FROM python:3.12\nWORKDIR /app\nCOPY requirements.txt ./\n' +
+             'RUN pip install -r requirements.txt\nCOPY . .\n' +
+             'RUN pip install -r requirements.txt\nUSER app\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+// lago's production image, which is what sent us looking. It must still fire.
+t('lago: COPY . /app/ before go mod download is still the defect', () => {
+  const df = 'FROM golang:1.25 AS go-build\nWORKDIR /app\nCOPY . /app/\n' +
+             'RUN go mod download\nRUN go build -o ep .\nUSER app\n';
+  assert.ok(rules(df).includes('cache-order'), rules(df).join());
+});
+t('lago: the dev image ordering is accepted', () => {
+  const df = 'FROM golang:1.25 AS go-build\nWORKDIR /app\nCOPY go.mod go.sum ./\n' +
+             'RUN go mod download\nCOPY . /app/\nRUN go build -o ep .\nUSER app\n';
+  assert.ok(!rules(df).includes('cache-order'), rules(df).join());
+});
+
 console.log('COPY --from external images');
 t('flags COPY --from an external image at :latest', () => {
   const df = 'FROM python:3.13-slim\nCOPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/\nUSER app\n';
